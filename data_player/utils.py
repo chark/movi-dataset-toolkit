@@ -25,3 +25,30 @@ def convert_world_points_to_image_points(rotation_matrix, translation_vector, in
         image_points[idx, :] = [u, v]
 
     return image_points
+
+
+def adapt_motion_data_for_video(motion_capture_data, rotation_matrix, translation_vector, intrinsic_matrix):
+    """
+    Adapt motion capture (MoCap) data for the video.
+
+    :param motion_capture_data: motion capture data (motion capture frames, motion points, 2)
+    :param rotation_matrix: camera's rotation matrix
+    :param translation_vector: camera's translation vector
+    :param intrinsic_matrix: camera's intrinsic matrix
+    :return: image plane points (video frames, motion points, 2)
+    :rtype: numpy array of ints
+    """
+    # Every forth capture is take because video is 30fps and motion capture 120fps.
+    markers = motion_capture_data[0::4, :, :]
+
+    image_points = np.full((markers.shape[0], markers.shape[1], 2), 0, dtype=int)
+
+    for i in range(0, markers.shape[1]):
+        world_points = np.squeeze(markers[:, i, :])
+        image_points[:, i] = convert_world_points_to_image_points(
+            rotation_matrix,
+            translation_vector,
+            intrinsic_matrix,
+            world_points)
+
+    return image_points
