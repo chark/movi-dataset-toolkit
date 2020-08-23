@@ -38,7 +38,7 @@ def display_window(video_file_path, points):
     cv2.destroyAllWindows()
 
 
-def run_player(extrinsic_data_path, camera_data_path, motion_capture_data_path, video_file_path):
+def run_player(extrinsic_data_path, camera_data_path, motion_capture_data_path, movement_number, video_file_path):
     extrinsic_data = np.load(extrinsic_data_path, )
     rotation_matrix = extrinsic_data['rotationMatrix']
     translation_vector = extrinsic_data['translationVector']
@@ -46,9 +46,11 @@ def run_player(extrinsic_data_path, camera_data_path, motion_capture_data_path, 
     camera_data = np.load(camera_data_path)
     intrinsic_matrix = camera_data['IntrinsicMatrix']
 
+    assert movement_number - 1 >= 0, 'Movement number has to start from 1.'
+
     motion_capture_data = \
         sio.loadmat(motion_capture_data_path, simplify_cells=True)['Subject_1_F_amass']['move']
-    joints = motion_capture_data[0]['jointsLocation_amass']
+    joints = motion_capture_data[movement_number - 1]['jointsLocation_amass']
 
     points = utils.adapt_motion_data_for_video(joints, rotation_matrix, translation_vector, intrinsic_matrix)
     display_window(video_file_path, points)
@@ -68,10 +70,20 @@ if __name__ == '__main__':
                         help='Path to the motion capture file.',
                         default='../data/AMASS/F_amass_Subject_1.mat',
                         type=str)
+    parser.add_argument('--movement_number',
+                        help='Number of the AMASS subject movement (starting from 1).',
+                        default=1,
+                        type=int)
     parser.add_argument('--video_file',
                         help='Path to the video file.',
                         default='../data/PG1/F_PG1_Subject_1_L1.avi',
                         type=str)
     args = parser.parse_args()
-    run_player(args.extrinsic_data, args.camera_data, args.motion_capture_data, args.video_file)
 
+    run_player(
+        args.extrinsic_data,
+        args.camera_data,
+        args.motion_capture_data,
+        args.movement_number,
+        args.video_file
+    )
