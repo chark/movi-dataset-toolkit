@@ -1,20 +1,19 @@
 import numpy as np
 
 
-def convert_world_points_to_image_points(rotation_matrix, translation_vector, intrinsic_matrix, world_points):
+def convert_world_points_to_image_points(camera, world_points):
     """Convert world 3D points to image plane points.
 
-    :param rotation_matrix: camera's rotation matrix
-    :param translation_vector: camera's translation vector
-    :param intrinsic_matrix: camera's intrinsic matrix
+    :param camera: camera's params
+    :type camera: Camera
     :param world_points: World points (size, 3)
     :type world_points: numpy array
     :return: image plane points (size, 2)
     :rtype: numpy array of ints
     """
-    translation_vector_expand = np.expand_dims(translation_vector, axis=0)
-    rot_tran_matrix = np.concatenate((rotation_matrix, translation_vector_expand), axis=0)
-    camera_matrix = np.dot(rot_tran_matrix, intrinsic_matrix)
+    translation_vector_expand = np.expand_dims(camera.translation_vector, axis=0)
+    rot_tran_matrix = np.concatenate((camera.rotation_matrix, translation_vector_expand), axis=0)
+    camera_matrix = np.dot(rot_tran_matrix, camera.intrinsic_matrix)
     image_points = np.zeros((world_points.shape[0], 2), dtype=int)
 
     for idx, val in enumerate(world_points):
@@ -27,14 +26,13 @@ def convert_world_points_to_image_points(rotation_matrix, translation_vector, in
     return image_points
 
 
-def adapt_motion_data_for_video(motion_capture_data, rotation_matrix, translation_vector, intrinsic_matrix):
+def adapt_motion_data_for_video(motion_capture_data, camera):
     """
     Adapt motion capture (MoCap) data for the video.
 
     :param motion_capture_data: motion capture data (motion capture frames, motion points, 2)
-    :param rotation_matrix: camera's rotation matrix
-    :param translation_vector: camera's translation vector
-    :param intrinsic_matrix: camera's intrinsic matrix
+    :param camera: camera's params
+    :type camera: Camera
     :return: image plane points (video frames, motion points, 2)
     :rtype: numpy array of ints
     """
@@ -45,10 +43,6 @@ def adapt_motion_data_for_video(motion_capture_data, rotation_matrix, translatio
 
     for i in range(0, markers.shape[1]):
         world_points = np.squeeze(markers[:, i, :])
-        image_points[:, i] = convert_world_points_to_image_points(
-            rotation_matrix,
-            translation_vector,
-            intrinsic_matrix,
-            world_points)
+        image_points[:, i] = convert_world_points_to_image_points(camera, world_points)
 
     return image_points
