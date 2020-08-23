@@ -27,8 +27,7 @@ def convert_world_points_to_image_points(camera, world_points):
 
 
 def adapt_motion_data_for_video(motion_capture_data, camera):
-    """
-    Adapt motion capture (MoCap) data for the video.
+    """Adapt motion capture (MoCap) data for the video.
 
     :param motion_capture_data: motion capture data (motion capture frames, motion points, 2)
     :param camera: camera's params

@@ -7,6 +7,11 @@ from camera import Camera
 
 
 def get_flags():
+    """Get command flags.
+
+    :return: flags
+    :rtype: argparse.ArgumentParser
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument('--extrinsic_data',
                         help='Path to the camera\'s extrinsic parameters.',
@@ -32,6 +37,13 @@ def get_flags():
 
 
 def read_camera_params(extrinsic_data_path, camera_data_path):
+    """Read camera's parameters.
+
+    :param extrinsic_data_path: path of the extrinsic data
+    :param camera_data_path: path of the camera's data
+    :return: camera's params
+    :rtype: Camera
+    """
     extrinsic_data = np.load(extrinsic_data_path)
     rotation_matrix = extrinsic_data['rotationMatrix']
     translation_vector = extrinsic_data['translationVector']
@@ -42,6 +54,17 @@ def read_camera_params(extrinsic_data_path, camera_data_path):
 
 
 def read_motion_capture_date(motion_capture_data_path, movement_number):
+    """Read motion capture data.
+
+    :param motion_capture_data_path: path to the motion capture data
+    :type motion_capture_data_path: str
+    :param movement_number: number of the motion capture movement
+    :type movement_number: int
+    :return: motion capture data
+    :rtype: np.ndarray
+    """
+    print(type(motion_capture_data_path))
+    print(type(movement_number))
     assert args.movement_number - 1 >= 0, 'Movement number has to start from 1.'
 
     motion_capture_data = \
@@ -51,6 +74,13 @@ def read_motion_capture_date(motion_capture_data_path, movement_number):
 
 
 def display_window(video_file_path, points):
+    """Display the player and run a video.
+
+    :param video_file_path: path to the video file
+    :type video_file_path: str
+    :param points: points to paint
+    :type points: np.ndarray
+    """
     cap = cv2.VideoCapture(video_file_path)
     current_frame_num = 0
     while cap.isOpened():
@@ -84,6 +114,15 @@ def display_window(video_file_path, points):
 
 
 def run_player(camera, motion_capture_data, video_file_path):
+    """Run motion capture player.
+
+    :param camera: camara params
+    :type camera: Camera
+    :param motion_capture_data: motion capture data
+    :type motion_capture_data: np.ndarray
+    :param video_file_path: path to the video file
+    :type video_file_path: str
+    """
     points = utils.adapt_motion_data_for_video(motion_capture_data, camera)
     display_window(video_file_path, points)
 
