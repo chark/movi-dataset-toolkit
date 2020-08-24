@@ -68,8 +68,10 @@ def read_motion_capture_data(motion_capture_data_path, movement_number):
     """
     assert movement_number - 1 >= 0, 'Movement number has to start from 1.'
 
-    motion_capture_data = \
-        sio.loadmat(motion_capture_data_path, simplify_cells=True)['Subject_1_F_amass']['move']
+    motion_capture_data = sio.loadmat(motion_capture_data_path, simplify_cells=True)
+    key = [key for key in motion_capture_data.keys() if key.startswith('Subject')][0]
+    motion_capture_data = motion_capture_data[key]['move']
+
     motion_capture_data = motion_capture_data[movement_number - 1]['jointsLocation_amass']
     return motion_capture_data
 
