@@ -33,6 +33,9 @@ def get_flags():
                         help='Path to the video file.',
                         default='../data/PG1/F_PG1_Subject_1_L1.avi',
                         type=str)
+    parser.add_argument('--output_video_file',
+                        help='Path to the output video file (e.g., ../output/output.avi).',
+                        type=str)
     return parser
 
 
@@ -63,8 +66,6 @@ def read_motion_capture_date(motion_capture_data_path, movement_number):
     :return: motion capture data
     :rtype: np.ndarray
     """
-    print(type(motion_capture_data_path))
-    print(type(movement_number))
     assert args.movement_number - 1 >= 0, 'Movement number has to start from 1.'
 
     motion_capture_data = \
@@ -113,7 +114,49 @@ def display_window(video_file_path, points):
     cv2.destroyAllWindows()
 
 
-def run_player(camera, motion_capture_data, video_file_path):
+def save_video(output_video_file_path, video_file_path, points):
+    """Save results into a video file.
+
+    :param output_video_file_path: path to the output video file
+    :type output_video_file_path: str
+    :param video_file_path: path to the video file
+    :type video_file_path: str
+    :param points: points to paint
+    :type points: np.ndarray
+    """
+    cap = cv2.VideoCapture(video_file_path)
+
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    video = cv2.VideoWriter(output_video_file_path, fourcc, fps, (width, height))
+
+    current_frame_num = 0
+    while cap.isOpened():
+        ret, frame = cap.read()
+
+        if ret:
+            frame_points = points[current_frame_num]
+            for idx, val in enumerate(frame_points):
+                frame = cv2.circle(
+                    frame,
+                    (val[0], val[1]),
+                    radius=2,
+                    color=(124, 252, 0),
+                    lineType=cv2.LINE_AA,
+                    thickness=-1
+                )
+            video.write(frame)
+            current_frame_num = current_frame_num + 1
+        else:
+            break
+
+    cap.release()
+    video.release()
+
+
+def run_player(camera, motion_capture_data, video_file_path, **kwargs):
     """Run motion capture player.
 
     :param camera: camara params
@@ -122,9 +165,14 @@ def run_player(camera, motion_capture_data, video_file_path):
     :type motion_capture_data: np.ndarray
     :param video_file_path: path to the video file
     :type video_file_path: str
+    :key output_video_file_path: path to the video file, optional
     """
     points = utils.adapt_motion_data_for_video(motion_capture_data, camera)
-    display_window(video_file_path, points)
+    # display_window(video_file_path, points)
+
+    output_video_file_path = kwargs.get('output_video_file_path', None)
+    if output_video_file_path:
+        save_video(output_video_file_path, video_file_path, points)
 
 
 if __name__ == '__main__':
@@ -133,8 +181,10 @@ if __name__ == '__main__':
     camera_params = read_camera_params(args.extrinsic_data, args.camera_data)
     motion_capture = read_motion_capture_date(args.motion_capture_data, args.movement_number)
 
+    print(args.output_video_file)
     run_player(
         camera_params,
         motion_capture,
-        args.video_file
+        args.video_file,
+        output_video_file_path=args.output_video_file
     )
