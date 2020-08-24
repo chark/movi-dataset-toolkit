@@ -56,7 +56,7 @@ def read_camera_params(extrinsic_data_path, camera_data_path):
     return Camera(rotation_matrix, translation_vector, intrinsic_matrix)
 
 
-def read_motion_capture_date(motion_capture_data_path, movement_number):
+def read_motion_capture_data(motion_capture_data_path, movement_number):
     """Read motion capture data.
 
     :param motion_capture_data_path: path to the motion capture data
@@ -66,7 +66,7 @@ def read_motion_capture_date(motion_capture_data_path, movement_number):
     :return: motion capture data
     :rtype: np.ndarray
     """
-    assert args.movement_number - 1 >= 0, 'Movement number has to start from 1.'
+    assert movement_number - 1 >= 0, 'Movement number has to start from 1.'
 
     motion_capture_data = \
         sio.loadmat(motion_capture_data_path, simplify_cells=True)['Subject_1_F_amass']['move']
@@ -179,7 +179,7 @@ if __name__ == '__main__':
     args = get_flags().parse_args()
 
     camera_params = read_camera_params(args.extrinsic_data, args.camera_data)
-    motion_capture = read_motion_capture_date(args.motion_capture_data, args.movement_number)
+    motion_capture = read_motion_capture_data(args.motion_capture_data, args.movement_number)
 
     run_player(
         camera_params,
