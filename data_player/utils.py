@@ -35,7 +35,7 @@ def adapt_motion_data_for_video(motion_capture_data, camera):
     :return: image plane points (video frames, motion points, 2)
     :rtype: numpy array of ints
     """
-    # Every forth capture is take because video is 30fps and motion capture 120fps.
+    # Every forth capture is taken because a video is 30fps and a motion capture - 120fps.
     markers = motion_capture_data[0::4, :, :]
 
     image_points = np.full((markers.shape[0], markers.shape[1], 2), 0, dtype=int)
