@@ -181,7 +181,6 @@ if __name__ == '__main__':
     camera_params = read_camera_params(args.extrinsic_data, args.camera_data)
     motion_capture = read_motion_capture_date(args.motion_capture_data, args.movement_number)
 
-    print(args.output_video_file)
     run_player(
         camera_params,
         motion_capture,
