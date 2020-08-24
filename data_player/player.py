@@ -74,13 +74,13 @@ def read_motion_capture_data(motion_capture_data_path, movement_number):
     return motion_capture_data
 
 
-def display_window(video_file_path, points):
+def display_window(video_file_path, image_points):
     """Display the player and run a video.
 
     :param video_file_path: path to the video file
     :type video_file_path: str
-    :param points: points to paint
-    :type points: np.ndarray
+    :param image_points: points for painting
+    :type image_points: np.ndarray
     """
     cap = cv2.VideoCapture(video_file_path)
     current_frame_num = 0
@@ -88,7 +88,7 @@ def display_window(video_file_path, points):
         ret, frame = cap.read()
 
         if ret:
-            frame_points = points[current_frame_num]
+            frame_points = image_points[current_frame_num]
             for idx, val in enumerate(frame_points):
                 frame = cv2.circle(
                     frame,
@@ -114,15 +114,15 @@ def display_window(video_file_path, points):
     cv2.destroyAllWindows()
 
 
-def save_video(output_video_file_path, video_file_path, points):
+def save_video(output_video_file_path, video_file_path, image_points):
     """Save results into a video file.
 
     :param output_video_file_path: path to the output video file
     :type output_video_file_path: str
     :param video_file_path: path to the video file
     :type video_file_path: str
-    :param points: points to paint
-    :type points: np.ndarray
+    :param image_points: points for painting
+    :type image_points: np.ndarray
     """
     cap = cv2.VideoCapture(video_file_path)
 
@@ -137,7 +137,7 @@ def save_video(output_video_file_path, video_file_path, points):
         ret, frame = cap.read()
 
         if ret:
-            frame_points = points[current_frame_num]
+            frame_points = image_points[current_frame_num]
             for idx, val in enumerate(frame_points):
                 frame = cv2.circle(
                     frame,
@@ -167,12 +167,12 @@ def run_player(camera, motion_capture_data, video_file_path, **kwargs):
     :type video_file_path: str
     :key output_video_file_path: path to the video file, optional
     """
-    points = utils.adapt_motion_data_for_video(motion_capture_data, camera)
-    # display_window(video_file_path, points)
+    image_points = utils.adapt_motion_data_for_video(motion_capture_data, camera)
+    display_window(video_file_path, image_points)
 
     output_video_file_path = kwargs.get('output_video_file_path', None)
     if output_video_file_path:
-        save_video(output_video_file_path, video_file_path, points)
+        save_video(output_video_file_path, video_file_path, image_points)
 
 
 if __name__ == '__main__':
