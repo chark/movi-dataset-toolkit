@@ -5,6 +5,7 @@ import scipy.io as sio
 import utils
 from camera import Camera
 from motion_capture import MotionCapture
+from pose_visualizer import PoseVisualizer
 
 
 def get_flags():
@@ -178,12 +179,23 @@ def run_player(camera, motion_capture, video_file_path, **kwargs):
         save_video(output_video_file_path, video_file_path, image_points)
 
 
+def run_3d_player(motion_capture):
+    """Show motion capture date in a 3d plot.
+
+    :param motion_capture: motion capture data
+    :type motion_capture: MotionCapture
+    :return:
+    """
+    pose_visualizer = PoseVisualizer(motion_capture)
+    pose_visualizer.show_plot()
+
+
 if __name__ == '__main__':
     args = get_flags().parse_args()
 
     camera_params = read_camera_params(args.extrinsic_data, args.camera_data)
     motion_capture_data = read_motion_capture_data(args.motion_capture_data, args.movement_number)
-
+    run_3d_player(motion_capture_data)
     run_player(
         camera_params,
         motion_capture_data,
