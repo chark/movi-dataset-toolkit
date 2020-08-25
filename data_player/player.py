@@ -73,7 +73,7 @@ def read_motion_capture_data(motion_capture_data_path, movement_number):
     motion_capture_data = sio.loadmat(motion_capture_data_path, simplify_cells=True)
     key = [key for key in motion_capture_data.keys() if key.startswith('Subject')][0]
     motion_capture_data = motion_capture_data[key]['move'][movement_number - 1]
-    joints = motion_capture_data['jointsLocation_amass']
+    joints = utils.reduce_motion_data_frame_rate(motion_capture_data['jointsLocation_amass'])
     skeleton = motion_capture_data['jointsParent']
     return MotionCapture(joints, skeleton)
 
