@@ -1,5 +1,5 @@
 # data_player
-![Motion Capture example](../.github/output.gif)
+![Motion Capture example](../.github/data_player.png)
 
 Data player helps to visualize MoVi motion capture files in Python.
 

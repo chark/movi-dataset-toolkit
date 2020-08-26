@@ -1,9 +1,15 @@
 import argparse
 import cv2
+import imageio
 import numpy as np
 import scipy.io as sio
+import matplotlib.pyplot as plt
 import utils
 from camera import Camera
+from matplotlib.animation import FuncAnimation
+from motion_capture import MotionCapture
+from motion_capture_visualizer import MotionCaptureVisualizer
+from pose_3d_visualizer import Pose3DVisualizer
 
 
 def get_flags():
@@ -68,19 +74,22 @@ def read_motion_capture_data(motion_capture_data_path, movement_number):
     """
     assert movement_number - 1 >= 0, 'Movement number has to start from 1.'
 
-    motion_capture_data = \
-        sio.loadmat(motion_capture_data_path, simplify_cells=True)['Subject_1_F_amass']['move']
-    motion_capture_data = motion_capture_data[movement_number - 1]['jointsLocation_amass']
-    return motion_capture_data
+    motion_capture_data = sio.loadmat(motion_capture_data_path, simplify_cells=True)
+    key = [key for key in motion_capture_data.keys() if key.startswith('Subject')][0]
+    motion_capture_data = motion_capture_data[key]['move'][movement_number - 1]
+    joints = motion_capture_data['jointsLocation_amass']
+    skeleton = motion_capture_data['jointsParent']
+    fps = 120  # Based on MoVi dataset description
+    return MotionCapture(joints, skeleton, fps)
 
 
-def display_window(video_file_path, points):
+def display_window(video_file_path, image_points):
     """Display the player and run a video.
 
     :param video_file_path: path to the video file
     :type video_file_path: str
-    :param points: points to paint
-    :type points: np.ndarray
+    :param image_points: points for painting
+    :type image_points: np.ndarray
     """
     cap = cv2.VideoCapture(video_file_path)
     current_frame_num = 0
@@ -88,7 +97,7 @@ def display_window(video_file_path, points):
         ret, frame = cap.read()
 
         if ret:
-            frame_points = points[current_frame_num]
+            frame_points = image_points[current_frame_num]
             for idx, val in enumerate(frame_points):
                 frame = cv2.circle(
                     frame,
@@ -114,15 +123,15 @@ def display_window(video_file_path, points):
     cv2.destroyAllWindows()
 
 
-def save_video(output_video_file_path, video_file_path, points):
+def save_video(output_video_file_path, video_file_path, image_points):
     """Save results into a video file.
 
     :param output_video_file_path: path to the output video file
     :type output_video_file_path: str
     :param video_file_path: path to the video file
     :type video_file_path: str
-    :param points: points to paint
-    :type points: np.ndarray
+    :param image_points: points for painting
+    :type image_points: np.ndarray
     """
     cap = cv2.VideoCapture(video_file_path)
 
@@ -137,7 +146,7 @@ def save_video(output_video_file_path, video_file_path, points):
         ret, frame = cap.read()
 
         if ret:
-            frame_points = points[current_frame_num]
+            frame_points = image_points[current_frame_num]
             for idx, val in enumerate(frame_points):
                 frame = cv2.circle(
                     frame,
@@ -156,34 +165,71 @@ def save_video(output_video_file_path, video_file_path, points):
     video.release()
 
 
-def run_player(camera, motion_capture_data, video_file_path, **kwargs):
-    """Run motion capture player.
+def run_opencv_player(camera, motion_capture, video_file_path, **kwargs):
+    """Run motion capture player. Based on OpenCV.
 
     :param camera: camara params
     :type camera: Camera
-    :param motion_capture_data: motion capture data
-    :type motion_capture_data: np.ndarray
+    :param motion_capture: motion capture data
+    :type motion_capture: MotionCapture
     :param video_file_path: path to the video file
     :type video_file_path: str
     :key output_video_file_path: path to the video file, optional
     """
-    points = utils.adapt_motion_data_for_video(motion_capture_data, camera)
-    # display_window(video_file_path, points)
+    image_points = utils.adapt_motion_data_for_video(motion_capture, camera)
+    display_window(video_file_path, image_points)
 
     output_video_file_path = kwargs.get('output_video_file_path', None)
     if output_video_file_path:
-        save_video(output_video_file_path, video_file_path, points)
+        save_video(output_video_file_path, video_file_path, image_points)
+
+
+def run_3d_player(motion_capture, video_file_path, camera):
+    """Show motion capture date in a 3d plot.
+
+    :param motion_capture: motion capture data
+    :type motion_capture: MotionCapture
+    :param video_file_path: path to the video file
+    :type video_file_path: str
+    :param camera: camara params
+    :type camera: Camera
+    """
+    fig = plt.figure()
+    ax1 = fig.add_subplot(2, 1, 1)
+    video = imageio.get_reader(video_file_path, 'ffmpeg')
+    motion_capture_visualizer = MotionCaptureVisualizer(fig, ax1, motion_capture, video, camera)
+
+    ax2 = fig.add_subplot(2, 1, 2, projection='3d')
+    pose_visualizer = Pose3DVisualizer(fig, ax2, motion_capture)
+
+    fps = 30
+
+    def update(frame):
+        motion_capture_visualizer.update(frame)
+        pose_visualizer.update(frame)
+
+    frames = np.arange(0, motion_capture.get_joints_reduced_by_fps(fps).shape[0])
+    interval = motion_capture.joints.shape[0] / fps
+
+    anim = FuncAnimation(
+        fig,
+        update,
+        frames=frames,
+        interval=interval,
+        repeat=True,
+    )
+    plt.show(block=True)
 
 
 if __name__ == '__main__':
     args = get_flags().parse_args()
 
     camera_params = read_camera_params(args.extrinsic_data, args.camera_data)
-    motion_capture = read_motion_capture_data(args.motion_capture_data, args.movement_number)
-
-    run_player(
+    motion_capture_data = read_motion_capture_data(args.motion_capture_data, args.movement_number)
+    run_3d_player(motion_capture_data, args.video_file, camera_params)
+    run_opencv_player(
         camera_params,
-        motion_capture,
+        motion_capture_data,
         args.video_file,
         output_video_file_path=args.output_video_file
     )
