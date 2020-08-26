@@ -3,6 +3,18 @@ from matplotlib.animation import FuncAnimation
 
 
 class Pose3DVisualizer(object):
+    """
+    Class which helps to visualize motion capture
+    pose in 3D space (matplotlib).
+
+    :param fig: matplotlib figure
+    :type fig: matplotlib.figure.Figure
+    :param ax: matplotlib 3D axes
+    :type ax: matplotlib.axes._subplots.Axes3DSubplot
+    :param motion_capture: motion capture data
+    :type motion_capture: MotionCapture
+    """
+
     def __init__(self, fig, ax, motion_capture):
         self.fig = fig
         self.ax = ax
@@ -10,6 +22,12 @@ class Pose3DVisualizer(object):
         self.skeleton = motion_capture.skeleton
 
     def update(self, frame):
+        """
+        Update the animation of the matplotlib figure.
+
+        :param frame: frame number
+        :type frame: int
+        """
         self.ax.clear()
         joints = self.joints[frame]
 
@@ -33,6 +51,14 @@ class Pose3DVisualizer(object):
         self.ax.set_ylim3d([-root + y_root, root + y_root])
 
     def get_animation(self, fps=30):
+        """
+        Get animation.
+
+        :param fps: frames per second
+        :type fps: int
+        :return: matplotlib animation
+        :rtype: matplotlib.animation.FuncAnimation
+        """
         frames = np.arange(0, self.joints.shape[0])
         interval = self.joints.shape[0] / fps
 
