@@ -35,7 +35,8 @@ def adapt_motion_data_for_video(motion_capture_data, camera):
     :return: image plane points (video frames, motion points, 2)
     :rtype: np.ndarray
     """
-    markers = reduce_motion_data_frame_rate(motion_capture_data)
+    # markers = reduce_motion_data_frame_rate(motion_capture_data)
+    markers = motion_capture_data
 
     image_points = np.full((markers.shape[0], markers.shape[1], 2), 0, dtype=int)
 

@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 
-class PoseVisualizer(object):
+class Pose3DVisualizer(object):
     def __init__(self, fig, ax, motion_capture):
         self.fig = fig
         self.ax = ax
@@ -34,9 +34,9 @@ class PoseVisualizer(object):
         self.ax.set_zlim3d([-root + z_root, root + z_root])
         self.ax.set_ylim3d([-root + y_root, root + y_root])
 
-    def show_plot(self):
+    def show_plot(self, fps=30):
         frames = np.arange(0, self.motion_capture.joints.shape[0])
-        interval = self.motion_capture.joints.shape[0] / 30
+        interval = self.motion_capture.joints.shape[0] / fps
 
         anim = FuncAnimation(
             self.fig,
@@ -45,5 +45,5 @@ class PoseVisualizer(object):
             interval=interval,
             repeat=False,
         )
-        # return anim
-        plt.show(block=True)
+        return anim
+        # plt.show(block=True)
