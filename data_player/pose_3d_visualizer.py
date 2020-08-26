@@ -1,6 +1,4 @@
-from mpl_toolkits import mplot3d
 import numpy as np
-import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 
@@ -8,14 +6,14 @@ class Pose3DVisualizer(object):
     def __init__(self, fig, ax, motion_capture):
         self.fig = fig
         self.ax = ax
-        self.motion_capture = motion_capture
+        self.joints = motion_capture.get_joints_reduced_by_fps(30)
+        self.skeleton = motion_capture.skeleton
 
     def update(self, frame):
         self.ax.clear()
-        joints = self.motion_capture.joints[frame]
-        skeleton = self.motion_capture.skeleton
+        joints = self.joints[frame]
 
-        for idx, val in enumerate(skeleton):
+        for idx, val in enumerate(self.skeleton):
             if idx == 0:
                 continue
             x_line = [joints[val - 1, 0], joints[idx, 0]]
@@ -34,9 +32,9 @@ class Pose3DVisualizer(object):
         self.ax.set_zlim3d([-root + z_root, root + z_root])
         self.ax.set_ylim3d([-root + y_root, root + y_root])
 
-    def show_plot(self, fps=30):
-        frames = np.arange(0, self.motion_capture.joints.shape[0])
-        interval = self.motion_capture.joints.shape[0] / fps
+    def get_animation(self, fps=30):
+        frames = np.arange(0, self.joints.shape[0])
+        interval = self.joints.shape[0] / fps
 
         anim = FuncAnimation(
             self.fig,
@@ -46,4 +44,3 @@ class Pose3DVisualizer(object):
             repeat=False,
         )
         return anim
-        # plt.show(block=True)

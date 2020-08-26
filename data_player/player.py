@@ -1,12 +1,15 @@
 import argparse
 import cv2
+import imageio
 import numpy as np
 import scipy.io as sio
 import matplotlib.pyplot as plt
 import utils
 from camera import Camera
+from matplotlib.animation import FuncAnimation
 from motion_capture import MotionCapture
-from pose_visualizer import PoseVisualizer
+from motion_capture_visualizer import MotionCaptureVisualizer
+from pose_3d_visualizer import Pose3DVisualizer
 
 
 def get_flags():
@@ -74,9 +77,10 @@ def read_motion_capture_data(motion_capture_data_path, movement_number):
     motion_capture_data = sio.loadmat(motion_capture_data_path, simplify_cells=True)
     key = [key for key in motion_capture_data.keys() if key.startswith('Subject')][0]
     motion_capture_data = motion_capture_data[key]['move'][movement_number - 1]
-    joints = utils.reduce_motion_data_frame_rate(motion_capture_data['jointsLocation_amass'])
+    joints = motion_capture_data['jointsLocation_amass']
     skeleton = motion_capture_data['jointsParent']
-    return MotionCapture(joints, skeleton)
+    fps = 120  # Based on MoVi dataset description
+    return MotionCapture(joints, skeleton, fps)
 
 
 def display_window(video_file_path, image_points):
@@ -161,8 +165,8 @@ def save_video(output_video_file_path, video_file_path, image_points):
     video.release()
 
 
-def run_player(camera, motion_capture, video_file_path, **kwargs):
-    """Run motion capture player.
+def run_opencv_player(camera, motion_capture, video_file_path, **kwargs):
+    """Run motion capture player. Based on OpenCV.
 
     :param camera: camara params
     :type camera: Camera
@@ -172,7 +176,7 @@ def run_player(camera, motion_capture, video_file_path, **kwargs):
     :type video_file_path: str
     :key output_video_file_path: path to the video file, optional
     """
-    image_points = utils.adapt_motion_data_for_video(motion_capture.joints, camera)
+    image_points = utils.adapt_motion_data_for_video(motion_capture, camera)
     display_window(video_file_path, image_points)
 
     output_video_file_path = kwargs.get('output_video_file_path', None)
@@ -180,17 +184,41 @@ def run_player(camera, motion_capture, video_file_path, **kwargs):
         save_video(output_video_file_path, video_file_path, image_points)
 
 
-def run_3d_player(motion_capture):
+def run_3d_player(motion_capture, video_file_path, camera):
     """Show motion capture date in a 3d plot.
 
     :param motion_capture: motion capture data
     :type motion_capture: MotionCapture
-    :return:
+    :param video_file_path: path to the video file
+    :type video_file_path: str
+    :param camera: camara params
+    :type camera: Camera
     """
     fig = plt.figure()
-    ax = plt.gca(projection="3d")
-    pose_visualizer = PoseVisualizer(fig, ax, motion_capture)
-    pose_visualizer.show_plot()
+    ax1 = fig.add_subplot(2, 1, 1)
+    video = imageio.get_reader(video_file_path, 'ffmpeg')
+    motion_capture_visualizer = MotionCaptureVisualizer(fig, ax1, motion_capture, video, camera)
+
+    ax2 = fig.add_subplot(2, 1, 2, projection='3d')
+    pose_visualizer = Pose3DVisualizer(fig, ax2, motion_capture)
+
+    fps = 30
+
+    def update(frame):
+        motion_capture_visualizer.update(frame)
+        pose_visualizer.update(frame)
+
+    frames = np.arange(0, motion_capture.get_joints_reduced_by_fps(fps).shape[0])
+    interval = motion_capture.joints.shape[0] / fps
+
+    anim = FuncAnimation(
+        fig,
+        update,
+        frames=frames,
+        interval=interval,
+        repeat=True,
+    )
+    plt.show(block=True)
 
 
 if __name__ == '__main__':
@@ -198,8 +226,8 @@ if __name__ == '__main__':
 
     camera_params = read_camera_params(args.extrinsic_data, args.camera_data)
     motion_capture_data = read_motion_capture_data(args.motion_capture_data, args.movement_number)
-    run_3d_player(motion_capture_data)
-    run_player(
+    run_3d_player(motion_capture_data, args.video_file, camera_params)
+    run_opencv_player(
         camera_params,
         motion_capture_data,
         args.video_file,
