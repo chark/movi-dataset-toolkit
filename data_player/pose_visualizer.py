@@ -5,10 +5,10 @@ from matplotlib.animation import FuncAnimation
 
 
 class PoseVisualizer(object):
-    def __init__(self, motion_capture):
+    def __init__(self, fig, ax, motion_capture):
+        self.fig = fig
+        self.ax = ax
         self.motion_capture = motion_capture
-        self.fig = plt.figure()
-        self.ax = plt.gca(projection="3d")
 
     def update(self, frame):
         self.ax.clear()

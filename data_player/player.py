@@ -2,6 +2,7 @@ import argparse
 import cv2
 import numpy as np
 import scipy.io as sio
+import matplotlib.pyplot as plt
 import utils
 from camera import Camera
 from motion_capture import MotionCapture
@@ -186,7 +187,9 @@ def run_3d_player(motion_capture):
     :type motion_capture: MotionCapture
     :return:
     """
-    pose_visualizer = PoseVisualizer(motion_capture)
+    fig = plt.figure()
+    ax = plt.gca(projection="3d")
+    pose_visualizer = PoseVisualizer(fig, ax, motion_capture)
     pose_visualizer.show_plot()
 
 
