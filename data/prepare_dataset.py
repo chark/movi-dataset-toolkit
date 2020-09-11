@@ -1,15 +1,4 @@
 import argparse
-import cv2
-import imageio
-import numpy as np
-import scipy.io as sio
-import matplotlib.pyplot as plt
-import utils
-from camera import Camera
-from matplotlib.animation import FuncAnimation
-from motion_capture import MotionCapture
-from motion_capture_visualizer import MotionCaptureVisualizer
-from pose_3d_visualizer import Pose3DVisualizer
 
 
 def get_flags():
@@ -19,13 +8,17 @@ def get_flags():
     :rtype: argparse.ArgumentParser
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument('--extrinsic_data',
-                        help='Path to the camera\'s extrinsic parameters.',
-                        default='../data/Calib/Extrinsics_PG1.npz',
+    parser.add_argument('--amass',
+                        help='Path to the AMASS folder.',
+                        default='./AMASS/',
                         type=str)
-    parser.add_argument('--camera_data',
-                        help='Path to the camera\'s parameters file.',
-                        default='../data/Calib/cameraParams_PG1.npz',
+    parser.add_argument('--videos',
+                        help='Path to the video folder.',
+                        default='./Videos/',
+                        type=str)
+    parser.add_argument('--output_videos',
+                        help='Path to the the output of split video folder.',
+                        default='./output-videos/',
                         type=str)
     return parser
 
