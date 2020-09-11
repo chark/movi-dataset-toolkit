@@ -4,7 +4,7 @@ The project which uses the [MoVi dataset](https://www.biomotionlab.ca/movi/) as 
 ![Motion Capture example](output.gif)
 
 ## Project Structure
-* [data](../data) - dataset folder.
+* [data](../data) - dataset folder (instruction of placing the data is in this folder).
 * [data_player](../data_player) - functionality for visualizing MoVi dataset.
 
 ## Todo
