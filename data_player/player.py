@@ -29,7 +29,7 @@ def get_flags():
                         type=str)
     parser.add_argument('--motion_capture_data',
                         help='Path to the motion capture file.',
-                        default='../data/AMASS/F_amass_Subject_1.mat',
+                        default='../data/AMASS/F_amass_Subject_2.mat',
                         type=str)
     parser.add_argument('--movement_number',
                         help='Number of the AMASS subject movement (starting from 1).',
@@ -37,7 +37,7 @@ def get_flags():
                         type=int)
     parser.add_argument('--video_file',
                         help='Path to the video file.',
-                        default='../data/PG1/F_PG1_Subject_1_L1.avi',
+                        default='../data/output_videos/F_PG1_Subject_1_L_1.avi',
                         type=str)
     parser.add_argument('--output_video_file',
                         help='Path to the output video file (e.g., ../output/output.avi).',
