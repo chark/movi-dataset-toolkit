@@ -2,6 +2,7 @@ import argparse
 import cv2
 import scipy.io as sio
 from pathlib import Path
+import glob
 
 
 def get_flags():
@@ -18,6 +19,10 @@ def get_flags():
     parser.add_argument('--videos',
                         help='Path to the video folder.',
                         default='./Videos/',
+                        type=str)
+    parser.add_argument('--v3d',
+                        help='Path to the V3D folder.',
+                        default='./V3D/',
                         type=str)
     parser.add_argument('--output_videos',
                         help='Path to the the output of split video folder.',
@@ -68,8 +73,8 @@ def split_video(video_path, v3d_path, output_path):
 
         if video_start <= current_frame_num <= video_end:
             if current_frame_num == video_start:
-                output_video_name = Path(video_path).stem + "_" + str(current_video_num + 1) + ".avi"
-                output_video_path = output_path + "/" + output_video_name
+                output_video_name = Path(video_path).stem + '_' + str(current_video_num + 1) + '.avi'
+                output_video_path = output_path + '/' + output_video_name
                 video = create_video_writer(width, height, fps, output_video_path)
 
             video.write(frame)
@@ -82,12 +87,25 @@ def split_video(video_path, v3d_path, output_path):
     cap.release()
 
 
-def main():
-    video_path = "./Videos/F_PG1_Subject_1_L.avi"
-    v3d_path = "./V3D/F_v3d_Subject_1.mat"
-    output_path = "./output_videos/"
-    split_video(video_path, v3d_path, output_path)
+def split_videos(video_paths, v3d_paths, output_path):
+    print('Starting splitting videos')
+    for video_path in video_paths:
+        partial_name = video_path[15:-6]
+
+        v3d_filtered_paths = list(filter(lambda element: partial_name in element, v3d_paths))
+        if len(v3d_filtered_paths) > 0:
+            print('Splitting: ' + video_path)
+            v3d_path = v3d_filtered_paths[0]
+            split_video(video_path, v3d_path, output_path)
+        else:
+            print(video_path + ' couldn\'t be split.')
+    print('Finish')
 
 
 if __name__ == '__main__':
-    main()
+    args = get_flags().parse_args()
+
+    video_paths = glob.glob(args.videos + '/*.avi')
+    v3d_paths = glob.glob(args.v3d + '/*.mat')
+    output_path = args.output_videos
+    split_videos(video_paths, v3d_paths, output_path)
