@@ -21,7 +21,7 @@ def get_flags():
                         type=str)
     parser.add_argument('--output_videos',
                         help='Path to the the output of split video folder.',
-                        default='./output-videos/',
+                        default='./output_videos/',
                         type=str)
     return parser
 
@@ -55,6 +55,8 @@ def split_video(video_path, v3d_path, output_path):
 
     current_frame_num = 1
     current_video_num = 0
+
+    video = None
     while cap.isOpened():
         if current_video_num >= motions_num:
             break
@@ -83,7 +85,7 @@ def split_video(video_path, v3d_path, output_path):
 def main():
     video_path = "./Videos/F_PG1_Subject_1_L.avi"
     v3d_path = "./V3D/F_v3d_Subject_1.mat"
-    output_path = "./output-videos/"
+    output_path = "./output_videos/"
     split_video(video_path, v3d_path, output_path)
 
 
