@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib.animation import FuncAnimation
-import utils
+from common import utils
 
 
 class MotionCaptureVisualizer(object):

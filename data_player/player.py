@@ -1,11 +1,12 @@
+# import sys
+# sys.path.append("..")
 import argparse
 import cv2
 import imageio
 import numpy as np
 import scipy.io as sio
 import matplotlib.pyplot as plt
-import utils
-from camera import Camera
+from common.camera import Camera
 from matplotlib.animation import FuncAnimation
 from motion_capture import MotionCapture
 from motion_capture_visualizer import MotionCaptureVisualizer
@@ -29,7 +30,7 @@ def get_flags():
                         type=str)
     parser.add_argument('--motion_capture_data',
                         help='Path to the motion capture file.',
-                        default='../data/AMASS/F_amass_Subject_2.mat',
+                        default='../data/AMASS/F_amass_Subject_1.mat',
                         type=str)
     parser.add_argument('--movement_number',
                         help='Number of the AMASS subject movement (starting from 1).',
