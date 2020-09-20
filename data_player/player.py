@@ -7,10 +7,11 @@ import numpy as np
 import scipy.io as sio
 import matplotlib.pyplot as plt
 from common.camera import Camera
+from common import utils
 from matplotlib.animation import FuncAnimation
-from motion_capture import MotionCapture
-from motion_capture_visualizer import MotionCaptureVisualizer
-from pose_3d_visualizer import Pose3DVisualizer
+from data_player.motion_capture import MotionCapture
+from data_player.motion_capture_visualizer import MotionCaptureVisualizer
+from data_player.pose_3d_visualizer import Pose3DVisualizer
 
 
 def get_flags():

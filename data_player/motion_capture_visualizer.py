@@ -21,8 +21,6 @@ class MotionCaptureVisualizer(object):
     """
 
     def __init__(self, fig, ax, motion_capture, video, camera):
-        print(type(video))
-        print(type(camera))
         self.fig = fig
         self.ax = ax
         self.image_points = utils.adapt_motion_data_for_video(
