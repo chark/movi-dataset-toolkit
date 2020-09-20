@@ -1,5 +1,5 @@
 import numpy as np
-import scipy.io as sio
+import skvideo.io
 from common.camera import Camera
 from common.motion_capture import MotionCapture
 
@@ -10,9 +10,9 @@ def convert_world_points_to_image_points(camera, world_points):
     :param camera: camera's params
     :type camera: Camera
     :param world_points: World points (size, 3)
-    :type world_points: np.ndarray
+    :type world_points: numpy.ndarray
     :return: image plane points (size, 2)
-    :rtype: np.ndarray of ints
+    :rtype: numpy.ndarray of ints
     """
     translation_vector_expand = np.expand_dims(camera.translation_vector, axis=0)
     rot_tran_matrix = np.concatenate((camera.rotation_matrix, translation_vector_expand), axis=0)
@@ -81,3 +81,15 @@ def read_motion_capture_data(motion_capture_data_path):
     skeleton = motion_capture_data['joints_parent']
     fps = 120  # Based on MoVi dataset description
     return MotionCapture(joints, skeleton, fps)
+
+
+def read_video(video_path):
+    """Read video data.
+
+    :param video_path: path to the video
+    :type video_path: str
+    :return: video as array
+    :rtype: numpy.ndarray
+    """
+    video = skvideo.io.vread(video_path)
+    return video
