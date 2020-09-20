@@ -4,6 +4,7 @@ import glob
 from pathlib import Path
 import cv2
 import scipy.io as sio
+import numpy as np
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
 console_handler = logging.StreamHandler()
@@ -29,9 +30,9 @@ def get_flags():
                         help='Path to the V3D folder.',
                         default='./V3D/',
                         type=str)
-    parser.add_argument('--output_videos',
-                        help='Path to the the output of split video folder.',
-                        default='./output_videos/',
+    parser.add_argument('--output',
+                        help='Path to the the output of the prepared dataset..',
+                        default='./output/',
                         type=str)
     return parser
 
@@ -138,7 +139,7 @@ def split_videos(video_paths, v3d_paths, output_path):
     :param output_path: path of the output directory
     :type output_path: str
     """
-    logging.info('Starting splitting videos')
+    logging.info('Starting splitting videos.')
     for video_path in video_paths:
         partial_name = video_path[15:-6]
 
@@ -149,7 +150,57 @@ def split_videos(video_paths, v3d_paths, output_path):
             split_video(video_path, v3d_path, output_path)
         else:
             logging.warning(video_path + ' couldn\'t be split: V3D file for the video is not found.')
-    logging.info('Finished splitting videos')
+    logging.info('Finished splitting videos.')
+
+
+def split_amass_file(path, output_path):
+    """Split an AMASS .mat file and save them into npz files.
+
+    :param path: path of the Amass file
+    :type path: str
+    :param output_path: path of output directory
+    :type output_path: str
+    """
+    amass_file = sio.loadmat(path, simplify_cells=True)
+    key = [key for key in amass_file.keys() if key.startswith('Subject')][0]
+    subject_id = amass_file[key]['id']
+    subject = amass_file[key]['subject']
+    moves = amass_file[key]['move']
+
+    for idx, val in enumerate(moves):
+        output_file_name = output_path + '/' + Path(path).stem + '_' + str(idx + 1) + '.npz'
+        root_translation = val['RootTranslation_amass']
+        joints_betas = val['jointsBetas_amass']
+        joints_location = val['jointsLocation_amass']
+        joints_exponential_mapping = val['jointsExpMaps_amass']
+        joints_parent = val['jointsParent']
+        description = val['description']
+        np.savez(
+            output_file_name,
+            id=subject_id,
+            subject=subject,
+            root_translation=root_translation,
+            joints_betas=joints_betas,
+            joints_location=joints_location,
+            joints_exponential_mapping=joints_exponential_mapping,
+            joints_parent=joints_parent,
+            description=description,
+        )
+
+
+def split_amass_files(amass_paths, output_path):
+    """Split AMASS .mat files and save them into npz files.
+
+    :param amass_paths: paths of Amass files
+    :type amass_paths: list of str
+    :param output_path: path of the output directory
+    :type output_path: str
+    """
+    logging.info('Starting splitting Amass files.')
+    for path in amass_paths:
+        split_amass_file(path, output_path)
+
+    logging.info('Finished splitting Amass files.')
 
 
 if __name__ == '__main__':
@@ -157,5 +208,7 @@ if __name__ == '__main__':
 
     video_paths = glob.glob(args.videos + '/*.avi')
     v3d_paths = glob.glob(args.v3d + '/*.mat')
-    output_path = args.output_videos
+    amass_paths = glob.glob(args.amass + '/*.mat')
+    output_path = args.output
     split_videos(video_paths, v3d_paths, output_path)
+    split_amass_files(amass_paths, output_path)

@@ -4,12 +4,11 @@ import argparse
 import cv2
 import imageio
 import numpy as np
-import scipy.io as sio
 import matplotlib.pyplot as plt
-from common.camera import Camera
 from common import utils
+from common.camera import Camera
+from common.motion_capture import MotionCapture
 from matplotlib.animation import FuncAnimation
-from data_player.motion_capture import MotionCapture
 from data_player.motion_capture_visualizer import MotionCaptureVisualizer
 from data_player.pose_3d_visualizer import Pose3DVisualizer
 
@@ -30,59 +29,17 @@ def get_flags():
                         default='../data/Calib/cameraParams_PG1.npz',
                         type=str)
     parser.add_argument('--motion_capture_data',
-                        help='Path to the motion capture file.',
-                        default='../data/AMASS/F_amass_Subject_1.mat',
+                        help='Path to the motion capture file (.npz).',
+                        default='../data/output/F_amass_Subject_1_1.npz',
                         type=str)
-    parser.add_argument('--movement_number',
-                        help='Number of the AMASS subject movement (starting from 1).',
-                        default=1,
-                        type=int)
     parser.add_argument('--video_file',
                         help='Path to the video file.',
-                        default='../data/output_videos/F_PG1_Subject_1_L_1.avi',
+                        default='../data/output/F_PG1_Subject_1_L_1.avi',
                         type=str)
     parser.add_argument('--output_video_file',
                         help='Path to the output video file (e.g., ../output/output.avi).',
                         type=str)
     return parser
-
-
-def read_camera_params(extrinsic_data_path, camera_data_path):
-    """Read camera's parameters.
-
-    :param extrinsic_data_path: path of the extrinsic data
-    :param camera_data_path: path of the camera's data
-    :return: camera's params
-    :rtype: Camera
-    """
-    extrinsic_data = np.load(extrinsic_data_path)
-    rotation_matrix = extrinsic_data['rotationMatrix']
-    translation_vector = extrinsic_data['translationVector']
-
-    camera_data = np.load(camera_data_path)
-    intrinsic_matrix = camera_data['IntrinsicMatrix']
-    return Camera(rotation_matrix, translation_vector, intrinsic_matrix)
-
-
-def read_motion_capture_data(motion_capture_data_path, movement_number):
-    """Read motion capture data.
-
-    :param motion_capture_data_path: path to the motion capture data
-    :type motion_capture_data_path: str
-    :param movement_number: number of the motion capture movement
-    :type movement_number: int
-    :return: motion capture data
-    :rtype: np.ndarray
-    """
-    assert movement_number - 1 >= 0, 'Movement number has to start from 1.'
-
-    motion_capture_data = sio.loadmat(motion_capture_data_path, simplify_cells=True)
-    key = [key for key in motion_capture_data.keys() if key.startswith('Subject')][0]
-    motion_capture_data = motion_capture_data[key]['move'][movement_number - 1]
-    joints = motion_capture_data['jointsLocation_amass']
-    skeleton = motion_capture_data['jointsParent']
-    fps = 120  # Based on MoVi dataset description
-    return MotionCapture(joints, skeleton, fps)
 
 
 def display_window(video_file_path, image_points):
@@ -226,8 +183,8 @@ def run_3d_player(motion_capture, video_file_path, camera):
 if __name__ == '__main__':
     args = get_flags().parse_args()
 
-    camera_params = read_camera_params(args.extrinsic_data, args.camera_data)
-    motion_capture_data = read_motion_capture_data(args.motion_capture_data, args.movement_number)
+    camera_params = utils.read_camera_params(args.extrinsic_data, args.camera_data)
+    motion_capture_data = utils.read_motion_capture_data(args.motion_capture_data)
     run_3d_player(motion_capture_data, args.video_file, camera_params)
     run_opencv_player(
         camera_params,

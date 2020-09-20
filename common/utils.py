@@ -1,4 +1,7 @@
 import numpy as np
+import scipy.io as sio
+from common.camera import Camera
+from common.motion_capture import MotionCapture
 
 
 def convert_world_points_to_image_points(camera, world_points):
@@ -47,3 +50,34 @@ def adapt_motion_data_for_video(motion_capture_data, camera, fps=30):
 
     return image_points
 
+
+def read_camera_params(extrinsic_data_path, camera_data_path):
+    """Read camera's parameters.
+
+    :param extrinsic_data_path: path of the extrinsic data
+    :param camera_data_path: path of the camera's data
+    :return: camera's params
+    :rtype: Camera
+    """
+    extrinsic_data = np.load(extrinsic_data_path)
+    rotation_matrix = extrinsic_data['rotationMatrix']
+    translation_vector = extrinsic_data['translationVector']
+
+    camera_data = np.load(camera_data_path)
+    intrinsic_matrix = camera_data['IntrinsicMatrix']
+    return Camera(rotation_matrix, translation_vector, intrinsic_matrix)
+
+
+def read_motion_capture_data(motion_capture_data_path):
+    """Read motion capture data.
+
+    :param motion_capture_data_path: path to the motion capture data
+    :type motion_capture_data_path: str
+    :return: motion capture data
+    :rtype: MotionCapture
+    """
+    motion_capture_data = np.load(motion_capture_data_path, allow_pickle=True)
+    joints = motion_capture_data['joints_location']
+    skeleton = motion_capture_data['joints_parent']
+    fps = 120  # Based on MoVi dataset description
+    return MotionCapture(joints, skeleton, fps)
