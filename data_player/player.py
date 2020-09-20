@@ -38,7 +38,7 @@ def get_flags():
                         type=int)
     parser.add_argument('--video_file',
                         help='Path to the video file.',
-                        default='../data/output_videos/F_PG1_Subject_1_L_1.avi',
+                        default='../data/output/F_PG1_Subject_1_L_1.avi',
                         type=str)
     parser.add_argument('--output_video_file',
                         help='Path to the output video file (e.g., ../output/output.avi).',
