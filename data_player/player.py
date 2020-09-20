@@ -29,13 +29,9 @@ def get_flags():
                         default='../data/Calib/cameraParams_PG1.npz',
                         type=str)
     parser.add_argument('--motion_capture_data',
-                        help='Path to the motion capture file.',
-                        default='../data/AMASS/F_amass_Subject_1.mat',
+                        help='Path to the motion capture file (.npz).',
+                        default='../data/output/F_amass_Subject_1_1.npz',
                         type=str)
-    parser.add_argument('--movement_number',
-                        help='Number of the AMASS subject movement (starting from 1).',
-                        default=1,
-                        type=int)
     parser.add_argument('--video_file',
                         help='Path to the video file.',
                         default='../data/output/F_PG1_Subject_1_L_1.avi',
@@ -188,7 +184,7 @@ if __name__ == '__main__':
     args = get_flags().parse_args()
 
     camera_params = utils.read_camera_params(args.extrinsic_data, args.camera_data)
-    motion_capture_data = utils.read_motion_capture_data(args.motion_capture_data, args.movement_number)
+    motion_capture_data = utils.read_motion_capture_data(args.motion_capture_data)
     run_3d_player(motion_capture_data, args.video_file, camera_params)
     run_opencv_player(
         camera_params,

@@ -68,22 +68,16 @@ def read_camera_params(extrinsic_data_path, camera_data_path):
     return Camera(rotation_matrix, translation_vector, intrinsic_matrix)
 
 
-def read_motion_capture_data(motion_capture_data_path, movement_number):
+def read_motion_capture_data(motion_capture_data_path):
     """Read motion capture data.
 
     :param motion_capture_data_path: path to the motion capture data
     :type motion_capture_data_path: str
-    :param movement_number: number of the motion capture movement
-    :type movement_number: int
     :return: motion capture data
     :rtype: MotionCapture
     """
-    assert movement_number - 1 >= 0, 'Movement number has to start from 1.'
-
-    motion_capture_data = sio.loadmat(motion_capture_data_path, simplify_cells=True)
-    key = [key for key in motion_capture_data.keys() if key.startswith('Subject')][0]
-    motion_capture_data = motion_capture_data[key]['move'][movement_number - 1]
-    joints = motion_capture_data['jointsLocation_amass']
-    skeleton = motion_capture_data['jointsParent']
+    motion_capture_data = np.load(motion_capture_data_path, allow_pickle=True)
+    joints = motion_capture_data['joints_location']
+    skeleton = motion_capture_data['joints_parent']
     fps = 120  # Based on MoVi dataset description
     return MotionCapture(joints, skeleton, fps)
