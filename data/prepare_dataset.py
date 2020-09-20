@@ -191,7 +191,7 @@ def split_amass_file(path, output_path):
 def split_amass_files(amass_paths, output_path):
     """Split AMASS .mat files and save them into npz files.
 
-    :param amass_paths: paths of videos
+    :param amass_paths: paths of Amass files
     :type amass_paths: list of str
     :param output_path: path of the output directory
     :type output_path: str
