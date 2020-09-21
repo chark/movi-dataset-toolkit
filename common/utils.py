@@ -1,5 +1,8 @@
+import re
+import glob
 import numpy as np
-import scipy.io as sio
+import skvideo.io
+from pathlib import Path
 from common.camera import Camera
 from common.motion_capture import MotionCapture
 
@@ -10,9 +13,9 @@ def convert_world_points_to_image_points(camera, world_points):
     :param camera: camera's params
     :type camera: Camera
     :param world_points: World points (size, 3)
-    :type world_points: np.ndarray
+    :type world_points: numpy.ndarray
     :return: image plane points (size, 2)
-    :rtype: np.ndarray of ints
+    :rtype: numpy.ndarray of ints
     """
     translation_vector_expand = np.expand_dims(camera.translation_vector, axis=0)
     rot_tran_matrix = np.concatenate((camera.rotation_matrix, translation_vector_expand), axis=0)
@@ -81,3 +84,66 @@ def read_motion_capture_data(motion_capture_data_path):
     skeleton = motion_capture_data['joints_parent']
     fps = 120  # Based on MoVi dataset description
     return MotionCapture(joints, skeleton, fps)
+
+
+def read_video(video_path):
+    """Read video data.
+
+    :param video_path: path to the video
+    :type video_path: str
+    :return: video as array
+    :rtype: numpy.ndarray
+    """
+    video = skvideo.io.vread(video_path)
+    return video
+
+
+def get_details_from_path(path):
+    """Get details from the path.
+
+    :param path: path to the file
+    :type path: str
+    :return:
+        - name - usually it is 'Subject'
+        - number - which subject is it
+        - sub_number - which subject's movement is it
+    """
+    file_name = Path(path).stem
+    numbers = [int(s) for s in file_name.split('_') if s.isdigit()]
+
+    name = file_name[8:15]
+    number = numbers[0]
+    sub_number = numbers[1]
+    return name, number, sub_number
+
+
+def read_dataset(videos_dir, amass_dir):
+    """Read dataset.
+
+    :param videos_dir: videos directory
+    :type videos_dir: str
+    :param amass_dir: amass files directory
+    :type amass_dir: str
+    :return:
+        - paths of the video
+        - paths of the motion capture files
+        - sub_number - which subject's movement is it
+    """
+    video_paths = glob.glob(videos_dir + '/*.avi')
+    amass_paths = glob.glob(amass_dir + '/*.npz')
+
+    videos_list = []
+    motion_captures_list = []
+    for path in amass_paths:
+        name, number, sub_number = get_details_from_path(path)
+
+        pattern = '.*{}_{}_.*_{}\.'.format(name, number, sub_number)
+        r = re.compile(pattern)
+        found_video_paths = list(filter(r.match, video_paths))
+        if len(found_video_paths) == 1:
+            # video = read_video(found_video_paths[0])
+            # amass = read_motion_capture_data(path)
+            videos_list.append(found_video_paths[0])
+            motion_captures_list.append(path)
+
+    return np.array(videos_list), np.array(motion_captures_list)

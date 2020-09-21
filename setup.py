@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='movi_project',
-    version='0.0.1',  # Required
+    version='0.0.1',
     description='The project which uses the MoVi dataset as the main source.',
     url='https://github.com/chark/MoVi-project',
     author='Ugnius Malukas, Edvinas Danevicius',
