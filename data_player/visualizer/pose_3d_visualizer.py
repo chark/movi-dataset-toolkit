@@ -1,8 +1,9 @@
 import numpy as np
 from matplotlib.animation import FuncAnimation
+from .base_visualizer import BaseVisualizer
 
 
-class Pose3DVisualizer(object):
+class Pose3DVisualizer(BaseVisualizer):
     """
     Class which helps to visualize motion capture
     pose in 3D space (matplotlib).

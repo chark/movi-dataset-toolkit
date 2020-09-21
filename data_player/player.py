@@ -9,8 +9,8 @@ from common import utils
 from common.camera import Camera
 from common.motion_capture import MotionCapture
 from matplotlib.animation import FuncAnimation
-from data_player.motion_capture_visualizer import MotionCaptureVisualizer
-from data_player.pose_3d_visualizer import Pose3DVisualizer
+from data_player.visualizer.motion_capture_visualizer import MotionCaptureVisualizer
+from data_player.visualizer.pose_3d_visualizer import Pose3DVisualizer
 
 
 def get_flags():

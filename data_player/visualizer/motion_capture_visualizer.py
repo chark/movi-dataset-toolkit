@@ -1,9 +1,10 @@
 import numpy as np
 from matplotlib.animation import FuncAnimation
 from common import utils
+from .base_visualizer import BaseVisualizer
 
 
-class MotionCaptureVisualizer(object):
+class MotionCaptureVisualizer(BaseVisualizer):
     """
     Class which helps to visualize motion capture
     joints on video (matplotlib).
