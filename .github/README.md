@@ -1,4 +1,4 @@
-# MoVi-project
+# MoVi Dataset Toolkit
 The project which uses the [MoVi dataset](https://www.biomotionlab.ca/movi/) as the main source.
 
 ![Motion Capture example](output.gif)
